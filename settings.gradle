@@ -1,1 +1,8 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal() // Стандартный портал для плагинов Gradle
+        mavenCentral() // Maven Central для зависимостей и плагинов
+    }
+}
+
 rootProject.name = 'metrics-common'

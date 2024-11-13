@@ -1,38 +1,133 @@
-plugins {
-    id 'java'
-    id 'org.springframework.boot' version '3.3.5'
-    id 'io.spring.dependency-management' version '1.1.6'
-}
+import java.text.SimpleDateFormat // Импорт класса для форматирования даты
 
-group = 'org.example'
-version = '0.0.1-SNAPSHOT'
+plugins {
+    id "java-library" // Подключает плагин для создания Java-библиотеки
+    id "maven-publish" // Подключает плагин для публикации артефактов в репозитории Maven
+    id "org.springframework.boot" version "2.4.6" // Подключает плагин для работы со Spring Boot
+    id "io.spring.dependency-management" version "1.1.0" // Плагин для управления зависимостями Spring
+    id "org.sonarqube" version "3.3" // Подключает плагин для интеграции с SonarQube для анализа качества кода
+    id "jacoco" // Подключает плагин для работы с JaCoCo — инструментом для анализа покрытия кода
+}
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
+        languageVersion = JavaLanguageVersion.of(17) // Указывает использовать Java 17 для сборки проекта
     }
 }
 
+group = 'org.example' // Определяет группу (group ID) проекта
+version = "1.0.0.55" // Определяет версию проекта
+
+dependencyManagement {
+    dependencies {
+        dependency "org.projectlombok:lombok:1.18.26" // Управление зависимостью Lombok для упрощения кода
+        dependency 'org.jetbrains:annotations:23.0.0' // Управление зависимостью с аннотациями от JetBrains
+    }
+}
+
+bootJar {
+    enabled = false // Отключает создание jar-файла для Spring Boot приложения
+}
+
+jar {
+    enabled = true // Включает создание обычного jar-файла
+    manifest {
+        attributes 'Version': archiveVersion, // Добавляет версию в манифест
+                'Build-time': new SimpleDateFormat("dd-MM-yyyy'T'HH:mm:ss").format(new Date()) // Добавляет время сборки
+    }
+}
+compileJava.options.encoding = 'UTF-8' // Устанавливает кодировку UTF-8 для компиляции Java-кода
+compileTestJava.options.encoding = 'UTF-8' // Устанавливает кодировку UTF-8 для компиляции тестового кода
+
 configurations {
     compileOnly {
-        extendsFrom annotationProcessor
+        extendsFrom annotationProcessor // Определяет, что конфигурация compileOnly расширяет конфигурацию annotationProcessor
     }
 }
 
 repositories {
-    mavenCentral()
+    mavenLocal() // Подключает локальный Maven-репозиторий
+    mavenCentral() // Подключает центральный репозиторий Maven
 }
+
+//publishing {
+//    repositories {
+//        maven {
+//            url "https://repo.maven.apache.org/maven2" // Указывает URL для публикации артефактов в репозиторий Maven
+//        }
+//    }
+//    publications {
+//        mavenJava(MavenPublication) { // Создает публикацию типа Maven
+//            artifactId project.name // Устанавливает ID артефакта равным имени проекта
+//            groupId project.group // Устанавливает group ID проекта
+//            version = version // Устанавливает версию артефакта
+//            from components.java // Указывает, что публикация должна включать компонент Java
+//        }
+//    }
+//}
 
 dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter-actuator'
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'io.micrometer:micrometer-tracing-bridge-brave'
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    //testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1' // Зависимость для API JUnit 5
+    //testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1' // Зависимость для JUnit 5 движка выполнения тестов
+
+    testImplementation 'io.jaegertracing:jaeger-client:1.3.2' // Зависимость для интеграции с Jaeger для трейсинга
+
+    // Mockito для тестирования
+    testImplementation 'org.mockito:mockito-core:4.0.0' // Основная зависимость для Mockito
+    testImplementation 'org.mockito:mockito-junit-jupiter:4.0.0' // Зависимость для интеграции Mockito с JUnit 5
+
+    // Spring
+    implementation 'org.springframework.boot:spring-boot-autoconfigure' // Зависимость для автоматической конфигурации Spring Boot
+    testImplementation 'org.springframework.boot:spring-boot-starter-test' // зависимость для тестирования Spring Boot
+
+    // REST API
+    implementation 'org.springframework.boot:spring-boot-starter-web:2.4.6' // Зависимость для работы с REST API
+
+    // Commons
+    implementation 'org.jetbrains:annotations:23.0.0' // Зависимость для аннотаций от JetBrains
+    implementation "org.apache.commons:commons-lang3:3.12.0" // Зависимость для использования Apache Commons Lang
+
+    // Logging
+    implementation "org.slf4j:slf4j-api" // Зависимость для использования SLF4J API для логирования
+    runtimeOnly "ch.qos.logback:logback-classic" // Зависимость для реализации логирования с помощью Logback
+    implementation "net.logstash.logback:logstash-logback-encoder:5.3" // Зависимость для логирования в формате JSON
+
+    // Aspectj
+    implementation "org.aspectj:aspectjweaver:1.9.19" // Зависимость для использования AspectJ для аспектно-ориентированного программирования
+
+    // Metrics
+    implementation "io.micrometer:micrometer-registry-prometheus" // Зависимость для интеграции с Prometheus через Micrometer
+    implementation "io.micrometer:micrometer-core" // Зависимость для использования ядра Micrometer
+    implementation "io.prometheus:simpleclient_spring_boot:0.12.0" // Зависимость для интеграции с Prometheus для Spring Boot
+
+    // Jaeger
+    implementation "io.opentracing.contrib:opentracing-spring-jaeger-starter:3.3.1" // Зависимость для использования Jaeger с OpenTracing и Spring
+
+    // Lombok
+    annotationProcessor "org.projectlombok:lombok:1.18.26" // Зависимость для аннотаций Lombok при компиляции
+    compileOnly "org.projectlombok:lombok:1.18.26" // Зависимость только для компиляции кода с Lombok
 }
 
-tasks.named('test') {
-    useJUnitPlatform()
+test {
+    useJUnitPlatform() // Указывает использовать платформу JUnit 5 для тестирования
+    finalizedBy jacocoTestReport // Указывает, что после выполнения тестов должна запускаться задача jacocoTestReport
+}
+
+// отвечает за настройку отчета о покрытии кода с помощью JaCoCo – инструмента для анализа покрытия кода тестами
+// в проектах на Java
+jacocoTestReport {
+    dependsOn test // Задача зависит от выполнения задачи тестов
+    reports {
+        xml.required.set(true) // Включает генерацию XML-отчета о покрытии кода
+        xml.outputLocation.set(file("${buildDir}/reports/jacoco/report.xml")) // Указывает путь для сохранения XML-отчета
+
+        html.required.set(true) // Включает генерацию HTML-отчета о покрытии кода
+        html.outputLocation.set(file("${buildDir}/reports/jacoco/html")) // Указывает путь для сохранения HTML-отчета
+    }
+}
+
+task teamcity() {
+    doLast {
+        println("##teamcity[buildNumber '${version}']") // Печатает строку, совместимую с форматами TeamCity для установки номера сборки
+    }
 }
