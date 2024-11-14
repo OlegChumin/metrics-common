@@ -7,3 +7,7 @@ feature-flag:
   ccc-jaeger:
     tracing:
       enabled: true
+
+logging:
+  level:
+    org.example.metricscommon: DEBUG
