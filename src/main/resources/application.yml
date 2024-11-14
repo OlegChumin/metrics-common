@@ -1,3 +1,9 @@
 spring:
   application:
     name: metrics-common
+
+# Включает трейсинг
+feature-flag:
+  ccc-jaeger:
+    tracing:
+      enabled: true

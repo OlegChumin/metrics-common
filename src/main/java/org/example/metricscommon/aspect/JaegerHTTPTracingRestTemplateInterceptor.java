@@ -35,8 +35,8 @@ public class JaegerHTTPTracingRestTemplateInterceptor implements ClientHttpReque
             tracer.inject(activeSpan.context(), Format.Builtin.HTTP_HEADERS, new TextMap() {
                 @Override
                 public void put(String key, String value) {
-                    if ("uber-trace-id".equals(key)) {
-                        key = "jaeger-trace-id"; // Переименовываем заголовок
+                    if ("uber-trace-id".equals(key) || "jaeger-trace-id".equals(key)) {
+                        request.getHeaders().add("uber-trace-id", value);
                     }
                     request.getHeaders().add(key, value);
                     log.info("Injected header: {} -> {}", key, value); // Логируем инжектированные заголовки
