@@ -19,7 +19,7 @@ import javax.annotation.PostConstruct;
 public class MetricConfiguration {
 
     static {
-        log.info("MetricConfiguration class is being loaded");
+        log.info("MetricConfiguration has being loaded");
     }
 
     @PostConstruct

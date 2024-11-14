@@ -41,7 +41,8 @@ public class JaegerHttpTracingExtractorNew {
                 throw new UnsupportedOperationException("TextMapExtractAdapter is only for reading");
             }
         });
-if (spanContext != null) {
+
+        if (spanContext != null) {
             log.info("Extracted SpanContext with Trace ID: {}, Span ID: {}", spanContext.toTraceId(), spanContext.toSpanId());
         } else {
             log.warn("No SpanContext extracted from headers.");

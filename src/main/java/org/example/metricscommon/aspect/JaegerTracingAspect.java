@@ -10,6 +10,7 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,6 +29,7 @@ import java.util.Map;
 @Aspect
 @Component("customTracingAspect")
 public class JaegerTracingAspect {
+
     @PostConstruct
     public void init() {
         log.info("JaegerTracingAspect has been initialized");
@@ -40,7 +42,6 @@ public class JaegerTracingAspect {
     private final Tracer tracer;
     private final JaegerHttpTracingExtractorNew httpTracingExtractor;
 
-    @Autowired
     public JaegerTracingAspect(Tracer tracer, @Qualifier("httpTracingExtractor") JaegerHttpTracingExtractorNew httpTracingExtractorNew) {
         this.tracer = tracer;
         this.httpTracingExtractor = httpTracingExtractorNew;
@@ -53,7 +54,6 @@ public class JaegerTracingAspect {
     @Pointcut("@within(org.springframework.web.bind.annotation.RestController)")
     private void allRestControllers() {
     }
-
     @Around("allServiceMethods() || allRestControllers()")
     public Object traceMethod(ProceedingJoinPoint pjp) throws Throwable {
         log.debug("TracingEnabled {}", tracingEnabled);
@@ -85,7 +85,7 @@ public class JaegerTracingAspect {
         } else {
             log.warn("HttpServletRequest not available for method: {}", methodName);
         }
-        // Если контекст был извлечен, создаем дочерний спан
+// Если контекст был извлечен, создаем дочерний спан
         // Создание дочернего или нового спана
         Span span;
         if (parentContext != null) {
@@ -98,10 +98,15 @@ public class JaegerTracingAspect {
                     methodName, span.context().toTraceId(), span.context().toSpanId());
         }
 
+        // Установка trace-id в MDC
+        MDC.put("jaeger-trace-id", span.context().toTraceId());
+
+
         // Логируем начало выполнения в спан -> все последующие действия, происходящие в этом потоке
         // (например, вызовы к другим сервисам, внутренние методы и т.д.), будут ассоциированы с этим активным Span.
         span.log("Starting method execution");
-// Активируем спан с помощью Scope
+
+        // Активируем спан с помощью Scope
         /**
          * Переменная scope необходима для активации и деактивации Span, несмотря на то, что она не используется
          * явно в коде. Она управляет временем жизни Span и автоматически закрывает его по завершению метода.
@@ -127,6 +132,5 @@ public class JaegerTracingAspect {
     // Метод для логирования заголовков запроса
     private void logRelevantRequestHeaders(HttpServletRequest request) {
         log.info("Header: jaeger_traceId = {}", request.getHeader("jaeger_traceId") != null ? request.getHeader("jaeger_traceId") : "jaeger_traceId not found");
-        log.info("Header: uber-trace-id = {}", request.getHeader("uber-trace-id") != null ? request.getHeader("uber-trace-id") : "uber-trace-id not found");
     }
 }

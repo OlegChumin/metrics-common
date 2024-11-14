@@ -31,24 +31,16 @@ public class JaegerHTTPTracingRestTemplateInterceptor implements ClientHttpReque
         log.info("Starting HTTP request: {} {}", request.getMethod(), request.getURI());
 
         Span activeSpan = tracer.activeSpan();
-if (activeSpan != null) {
+        if (activeSpan != null) {
             tracer.inject(activeSpan.context(), Format.Builtin.HTTP_HEADERS, new TextMap() {
                 @Override
                 public void put(String key, String value) {
-                    // Используем стандартное имя для заголовка, чтобы избежать проблем с распознаванием
                     if ("uber-trace-id".equals(key)) {
-                        request.getHeaders().add(key, value);
+                        key = "jaeger-trace-id"; // Переименовываем заголовок
                     }
+                    request.getHeaders().add(key, value);
                     log.info("Injected header: {} -> {}", key, value); // Логируем инжектированные заголовки
                 }
-//                @Override
-//                public void put(String key, String value) {
-//                    if ("uber-trace-id".equals(key)) {
-//                        key = "jaeger_traceId"; // Переименовываем заголовок
-//                    }
-//                    request.getHeaders().add(key, value);
-//                    log.info("Injected header: {} -> {}", key, value); // Логируем инжектированные заголовки
-//                }
 
                 @Override
                 public Iterator<Map.Entry<String, String>> iterator() {
@@ -60,20 +52,20 @@ if (activeSpan != null) {
             // Логируем предупреждение, если активного спана нет
             log.warn("No active span found. Cannot inject trace context.");
         }
-// Логируем только релевантные заголовки
-        String jaegerTraceId = request.getHeaders().getFirst("jaeger_traceId");
+        // Логируем только релевантные заголовки
+        String jaegerTraceId = request.getHeaders().getFirst("jaeger-trace-id");
         String uberTraceId = request.getHeaders().getFirst("uber-trace-id");
-// Разбор jaeger_traceId для проверки формата
+        // Разбор jaeger_traceId для проверки формата
         if (jaegerTraceId != null) {
             String[] parts = jaegerTraceId.split(":");
             if (parts.length == 4) {
-                log.info("jaeger_traceId format valid: traceId={}, spanId={}, parentSpanId={}, flags={}",
+                log.info("jaeger-trace-id format valid: traceId={}, spanId={}, parentSpanId={}, flags={}",
                         parts[0], parts[1], parts[2], parts[3]);
             } else {
-                log.warn("jaeger_traceId format invalid: {}", jaegerTraceId);
+                log.warn("jaeger-trace-id format invalid: {}", jaegerTraceId);
             }
         } else {
-            log.warn("jaeger_traceId not found in headers");
+            log.warn("jaeger-trace-id not found in headers");
         }
 
         // Разбор uber-trace-id для проверки формата
