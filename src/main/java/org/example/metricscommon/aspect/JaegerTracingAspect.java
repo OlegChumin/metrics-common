@@ -11,7 +11,6 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.slf4j.MDC;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -36,8 +35,8 @@ public class JaegerTracingAspect {
     }
 
     // ff флаг работы аспекта jaeger
-    @Value("${feature-flag.ccc-jaeger.tracing.enabled}")
-    private boolean tracingEnabled;
+    //@Value("${feature-flag.ccc-jaeger.tracing.enabled}")
+    private boolean tracingEnabled = true;
 
     private final Tracer tracer;
     private final JaegerHttpTracingExtractorNew httpTracingExtractor;
@@ -54,6 +53,7 @@ public class JaegerTracingAspect {
     @Pointcut("@within(org.springframework.web.bind.annotation.RestController)")
     private void allRestControllers() {
     }
+
     @Around("allServiceMethods() || allRestControllers()")
     public Object traceMethod(ProceedingJoinPoint pjp) throws Throwable {
         log.debug("TracingEnabled {}", tracingEnabled);
@@ -85,7 +85,7 @@ public class JaegerTracingAspect {
         } else {
             log.warn("HttpServletRequest not available for method: {}", methodName);
         }
-// Если контекст был извлечен, создаем дочерний спан
+        // Если контекст был извлечен, создаем дочерний спан
         // Создание дочернего или нового спана
         Span span;
         if (parentContext != null) {
