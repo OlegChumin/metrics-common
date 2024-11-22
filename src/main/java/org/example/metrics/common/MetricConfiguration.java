@@ -1,11 +1,10 @@
-package org.example.common;
+package org.example.metrics.common;
 
 import io.opentracing.Tracer;
 import lombok.extern.slf4j.Slf4j;
-import org.example.common.aspect.JaegerHTTPTracingRestTemplateInterceptor;
-import org.example.common.aspect.JaegerHttpTracingExtractorNew;
+import org.example.metrics.common.aspect.JaegerHTTPTracingRestTemplateInterceptor;
+import org.example.metrics.common.aspect.JaegerHttpTracingExtractorNew;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;

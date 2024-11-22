@@ -1,4 +1,4 @@
-package org.example.common.aspect;
+package org.example.metrics.common.aspect;
 
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
