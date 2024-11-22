@@ -14,7 +14,7 @@ java {
 }
 
 group = 'org.example' // Определяет группу (group ID) проекта
-version = "1.0.0.63" // Определяет версию проекта
+version = "1.0.0.64" // Определяет версию проекта
 
 dependencyManagement {
     dependencies {
