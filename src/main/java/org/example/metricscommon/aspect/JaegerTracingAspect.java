@@ -35,8 +35,8 @@ public class JaegerTracingAspect {
     }
 
     // ff флаг работы аспекта jaeger
-    //@Value("${feature-flag.ccc-jaeger.tracing.enabled}")
-    private boolean tracingEnabled = true;
+    @Value("${feature-flag.ccc-jaeger.tracing.enabled}")
+    private boolean tracingEnabled;
 
     private final Tracer tracer;
     private final JaegerHttpTracingExtractorNew httpTracingExtractor;
