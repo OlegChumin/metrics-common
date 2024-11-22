@@ -5,10 +5,10 @@ spring:
     active: default
 
 # Включает трейсинг
-feature-flag:
-  ccc-jaeger:
-    tracing:
-      enabled: true
+#feature-flag:
+#  ccc-jaeger:
+#    tracing:
+#      enabled: true
 
 logging:
   level:

@@ -1,0 +1,21 @@
+# Запускает docker с Jaeger all-in-one и запускает docker с HotRod приложением
+# HotROD UI: http://localhost:8080
+# Jaeger UI: http://localhost:16686
+version: '3'
+services:
+  jaeger:
+    image: jaegertracing/jaeger:2.0.0
+    command:
+      - --set
+      - receivers.otlp.protocols.http.endpoint=0.0.0.0:4318
+      - --set
+      - receivers.otlp.protocols.grpc.endpoint=0.0.0.0:4317
+    ports:
+      - "16686:16686"
+      - "4317:4317"
+      - "4318:4318"
+    networks:
+      - default
+networks:
+  default:
+    driver: bridge
