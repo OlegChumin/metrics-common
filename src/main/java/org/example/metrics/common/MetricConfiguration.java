@@ -15,7 +15,7 @@ import javax.annotation.PostConstruct;
 @Slf4j
 @Configuration
 //@EnableAutoConfiguration
-@AutoConfigureAfter(io.opentracing.contrib.java.spring.jaeger.starter.JaegerAutoConfiguration.class)
+//@AutoConfigureAfter(io.opentracing.contrib.java.spring.jaeger.starter.JaegerAutoConfiguration.class)
 @EnableAspectJAutoProxy
 public class MetricConfiguration {
 
