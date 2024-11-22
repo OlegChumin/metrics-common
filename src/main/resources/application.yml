@@ -1,6 +1,8 @@
 spring:
   application:
     name: metrics-common
+  profiles:
+    active: default
 
 # Включает трейсинг
 feature-flag:
