@@ -18,6 +18,7 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
@@ -37,7 +38,6 @@ public class JaegerTracingAspect {
     // ff флаг работы аспекта jaeger
     @Value("${feature-flag.ccc-jaeger.tracing.enabled}")
     private boolean tracingEnabled;
-
     private final Tracer tracer;
     private final JaegerHttpTracingExtractorNew httpTracingExtractor;
 
@@ -64,7 +64,6 @@ public class JaegerTracingAspect {
 
         String methodName = pjp.getSignature().getName();
         log.debug("methodName: {}", methodName);
-
         // Извлечение HttpServletRequest
         RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
         HttpServletRequest request = null;
@@ -74,6 +73,7 @@ public class JaegerTracingAspect {
 
         // Инициализация parentContext и логирование заголовков
         SpanContext parentContext = null;
+
         if (request != null) {
             logRelevantRequestHeaders(request);
             parentContext = httpTracingExtractor.extract(request);
@@ -100,9 +100,7 @@ public class JaegerTracingAspect {
 
         // Установка trace-id в MDC
         MDC.put("jaeger-trace-id", span.context().toTraceId());
-
-
-        // Логируем начало выполнения в спан -> все последующие действия, происходящие в этом потоке
+// Логируем начало выполнения в спан -> все последующие действия, происходящие в этом потоке
         // (например, вызовы к другим сервисам, внутренние методы и т.д.), будут ассоциированы с этим активным Span.
         span.log("Starting method execution");
 
@@ -131,6 +129,6 @@ public class JaegerTracingAspect {
 
     // Метод для логирования заголовков запроса
     private void logRelevantRequestHeaders(HttpServletRequest request) {
-        log.info("Header: jaeger_traceId = {}", request.getHeader("jaeger_traceId") != null ? request.getHeader("jaeger_traceId") : "jaeger_traceId not found");
+        log.info("Header: jaeger-trace-id = {}", request.getHeader("jaeger-trace-id") != null ? request.getHeader("jaeger-trace-id") : "jaeger-trace-id not found");
     }
 }

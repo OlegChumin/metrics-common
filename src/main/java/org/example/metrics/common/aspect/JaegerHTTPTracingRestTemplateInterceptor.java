@@ -35,13 +35,12 @@ public class JaegerHTTPTracingRestTemplateInterceptor implements ClientHttpReque
             tracer.inject(activeSpan.context(), Format.Builtin.HTTP_HEADERS, new TextMap() {
                 @Override
                 public void put(String key, String value) {
-                    if ("uber-trace-id".equals(key) || "jaeger-trace-id".equals(key)) {
-                        request.getHeaders().add("uber-trace-id", value);
+                    if ("uber-trace-id".equals(key)) {
+                        key = "jaeger-trace-id"; // Переименовываем заголовок
                     }
                     request.getHeaders().add(key, value);
                     log.info("Injected header: {} -> {}", key, value); // Логируем инжектированные заголовки
                 }
-
                 @Override
                 public Iterator<Map.Entry<String, String>> iterator() {
                     throw new UnsupportedOperationException("iterator should never be used with TextMapInjectAdapter");
@@ -54,7 +53,7 @@ public class JaegerHTTPTracingRestTemplateInterceptor implements ClientHttpReque
         }
         // Логируем только релевантные заголовки
         String jaegerTraceId = request.getHeaders().getFirst("jaeger-trace-id");
-        String uberTraceId = request.getHeaders().getFirst("uber-trace-id");
+
         // Разбор jaeger_traceId для проверки формата
         if (jaegerTraceId != null) {
             String[] parts = jaegerTraceId.split(":");
@@ -68,23 +67,9 @@ public class JaegerHTTPTracingRestTemplateInterceptor implements ClientHttpReque
             log.warn("jaeger-trace-id not found in headers");
         }
 
-        // Разбор uber-trace-id для проверки формата
-        if (uberTraceId != null) {
-            String[] parts = uberTraceId.split(":");
-            if (parts.length == 4) {
-                log.info("uber-trace-id format valid: traceId={}, spanId={}, parentSpanId={}, flags={}",
-                        parts[0], parts[1], parts[2], parts[3]);
-            } else {
-                log.warn("uber-trace-id format invalid: {}", uberTraceId);
-            }
-        } else {
-            log.warn("uber-trace-id not found in headers");
-        }
+        log.info("Header: jaeger-trace-id = {}",
+                jaegerTraceId != null ? jaegerTraceId : "jaeger-trace-id not found");
 
-        log.info("Header: jaeger_traceId = {}",
-                jaegerTraceId != null ? jaegerTraceId : "jaeger_traceId not found");
-        log.info("Header: uber-trace-id = {}",
-                uberTraceId != null ? uberTraceId : "uber-trace-id not found");
         // Выполняем запрос
         return execution.execute(request, body);
     }

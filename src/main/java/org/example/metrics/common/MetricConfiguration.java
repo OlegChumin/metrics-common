@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.web.client.RestTemplate;
 
+
 import javax.annotation.PostConstruct;
 
 @Slf4j
@@ -35,7 +36,6 @@ public class MetricConfiguration {
         log.info("RestTemplate bean with tracing interceptor initialized successfully");
         return restTemplate;
     }
-
     @Bean(name = "httpTracingExtractor")
     public JaegerHttpTracingExtractorNew httpTracingExtractorNew(Tracer tracer) {
         log.info("Initializing JaegerHttpTracingExtractorNew bean with provided Tracer");
