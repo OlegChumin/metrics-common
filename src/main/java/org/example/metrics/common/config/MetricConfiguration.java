@@ -7,6 +7,7 @@ import org.example.metrics.common.aspect.jaeger.JaegerHttpTracingExtractorNew;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.web.client.RestTemplate;
@@ -16,9 +17,10 @@ import javax.annotation.PostConstruct;
 
 @Slf4j
 @Configuration
-@EnableAutoConfiguration
+//@EnableAutoConfiguration
 @AutoConfigureAfter(io.opentracing.contrib.java.spring.jaeger.starter.JaegerAutoConfiguration.class)
 @EnableAspectJAutoProxy
+@ComponentScan(basePackages = "org.example.metrics.common")
 public class MetricConfiguration {
 
     static {

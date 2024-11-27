@@ -86,6 +86,8 @@ dependencies {
 
     // AspectJ
     implementation 'org.aspectj:aspectjweaver:1.9.7' // Зависимость для использования AspectJ для аспектно-ориентированного программирования
+    //implementation 'org.springframework.boot:spring-boot-starter-aop'
+
 
     // Jaeger
     implementation 'io.opentracing.contrib:opentracing-spring-jaeger-starter:3.3.1' // Зависимость для использования Jaeger с OpenTracing и Spring

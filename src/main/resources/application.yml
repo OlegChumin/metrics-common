@@ -3,7 +3,12 @@ spring:
     name: metrics-common
   profiles:
     active: default
+  aop:
+    auto: true
+    proxy-target-class: false
+
 
 logging:
   level:
     org.example.metricscommon: DEBUG
+
