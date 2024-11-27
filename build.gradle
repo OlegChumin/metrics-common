@@ -38,10 +38,6 @@ compileTestJava {
     options.encoding = 'UTF-8' // Устанавливает кодировку UTF-8 для компиляции тестового кода
 }
 
-bootJar {
-    enabled = false // Отключает создание jar-файла для Spring Boot приложения
-}
-
 jar {
     enabled = true // Включает создание обычного jar-файла
     manifest {

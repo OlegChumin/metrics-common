@@ -1,7 +1,6 @@
 package aspect;
 
 import io.opentracing.Scope;
-import io.opentracing.Tracer;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 import org.example.metrics.common.aspect.jaeger.JaegerHTTPTracingRestTemplateInterceptor;
@@ -14,7 +13,6 @@ import org.springframework.http.HttpRequest;
 import org.springframework.http.client.ClientHttpRequestExecution;
 import org.springframework.http.client.ClientHttpResponse;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URI;
 
@@ -32,9 +30,10 @@ class JaegerHTTPTracingRestTemplateInterceptorTest {
         interceptor = new JaegerHTTPTracingRestTemplateInterceptor(tracer);
     }
 
+
     @Disabled
     @Test
-    void testInjectTraceHeaders() throws IOException {
+    void testInjectTraceHeadersJaegerTraceId() throws IOException {
         // Создаем Mock Span
         MockSpan span = tracer.buildSpan("test-span").start();
         try (Scope scope = tracer.scopeManager().activate(span)) { // Управляем контекстом через Scope
@@ -69,6 +68,41 @@ class JaegerHTTPTracingRestTemplateInterceptorTest {
         }
     }
 
+    @Disabled
+    @Test
+    void testInjectTraceHeadersUberTraceId() throws IOException {
+        MockSpan span = tracer.buildSpan("test-span").start();
+        try (Scope scope = tracer.scopeManager().activate(span)) {
+            // Мокаем HttpRequest и ClientHttpRequestExecution
+            HttpRequest request = mock(HttpRequest.class);
+            ClientHttpRequestExecution execution = mock(ClientHttpRequestExecution.class);
+            ClientHttpResponse response = mock(ClientHttpResponse.class);
+
+            HttpHeaders headers = new HttpHeaders();
+            when(request.getHeaders()).thenReturn(headers);
+            when(request.getMethod()).thenReturn(HttpMethod.GET);
+            when(request.getURI()).thenReturn(URI.create("http://localhost/test"));
+            when(execution.execute(request, new byte[0])).thenReturn(response);
+
+            // Запускаем интерцептор
+            interceptor.intercept(request, new byte[0], execution);
+
+            // Проверяем, что заголовки добавлены
+            assertTrue(headers.containsKey("uber-trace-id"), "Header 'uber-trace-id' should be present");
+            String uberTraceId = headers.getFirst("uber-trace-id");
+            assertNotNull(uberTraceId, "Header 'uber-trace-id' should not be null");
+
+            // Проверяем, что формат заголовка правильный
+            String[] parts = uberTraceId.split(":");
+            assertEquals(4, parts.length, "uber-trace-id should have 4 parts");
+
+            // Проверяем, что запрос был выполнен
+            verify(execution).execute(request, new byte[0]);
+        } finally {
+            span.finish();
+        }
+    }
+
 
     @Test
     void testNoActiveSpan() throws IOException {
@@ -95,7 +129,7 @@ class JaegerHTTPTracingRestTemplateInterceptorTest {
 
     @Disabled
     @Test
-    void testInvalidJaegerTraceId() throws IOException {
+    void testInvalidJaegerJaegerTraceId() throws IOException {
         // Создаем Mock Span с кастомным traceId
         MockSpan span = tracer.buildSpan("test-span").start();
         span.setBaggageItem("uber-trace-id", "invalid-trace-id");
@@ -123,4 +157,38 @@ class JaegerHTTPTracingRestTemplateInterceptorTest {
         // Проверяем, что запрос был выполнен
         verify(execution).execute(request, new byte[0]);
     }
+
+    @Disabled
+    @Test
+    void testInvalidJaegerUberTraceId() throws IOException {
+        MockSpan span = tracer.buildSpan("test-span").start();
+        try (Scope scope = tracer.scopeManager().activate(span)) {
+            span.setBaggageItem("uber-trace-id", "invalid-trace-id");
+
+            // Мокаем HttpRequest и ClientHttpRequestExecution
+            HttpRequest request = mock(HttpRequest.class);
+            ClientHttpRequestExecution execution = mock(ClientHttpRequestExecution.class);
+            ClientHttpResponse response = mock(ClientHttpResponse.class);
+
+            HttpHeaders headers = new HttpHeaders();
+            when(request.getHeaders()).thenReturn(headers);
+            when(request.getMethod()).thenReturn(HttpMethod.GET);
+            when(request.getURI()).thenReturn(URI.create("http://localhost/test"));
+            when(execution.execute(request, new byte[0])).thenReturn(response);
+
+            // Запускаем интерцептор
+            interceptor.intercept(request, new byte[0], execution);
+
+            // Проверяем, что заголовок добавлен, но содержит некорректные данные
+            assertTrue(headers.containsKey("uber-trace-id"), "Header 'uber-trace-id' should be present");
+            String uberTraceId = headers.getFirst("uber-trace-id");
+            assertEquals("invalid-trace-id", uberTraceId, "The 'uber-trace-id' should match the invalid trace id");
+
+            // Проверяем, что запрос был выполнен
+            verify(execution).execute(request, new byte[0]);
+        } finally {
+            span.finish();
+        }
+    }
+
 }
