@@ -1,4 +1,4 @@
-package org.example.metrics.common;
+package org.example.metrics.common.config;
 
 import io.opentracing.Tracer;
 import lombok.extern.slf4j.Slf4j;
