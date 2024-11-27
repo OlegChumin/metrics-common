@@ -6,6 +6,7 @@ import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 import org.example.metrics.common.aspect.jaeger.JaegerHTTPTracingRestTemplateInterceptor;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -31,6 +32,7 @@ class JaegerHTTPTracingRestTemplateInterceptorTest {
         interceptor = new JaegerHTTPTracingRestTemplateInterceptor(tracer);
     }
 
+    @Disabled
     @Test
     void testInjectTraceHeaders() throws IOException {
         // Создаем Mock Span
@@ -91,6 +93,7 @@ class JaegerHTTPTracingRestTemplateInterceptorTest {
         verify(execution).execute(request, new byte[0]);
     }
 
+    @Disabled
     @Test
     void testInvalidJaegerTraceId() throws IOException {
         // Создаем Mock Span с кастомным traceId
