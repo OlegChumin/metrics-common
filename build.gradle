@@ -5,6 +5,7 @@ plugins {
     id "maven-publish" // Подключает плагин для публикации артефактов в репозитории Maven
     id "org.springframework.boot" version "2.4.6" // Подключает плагин для работы со Spring Boot
     id "io.spring.dependency-management" version "1.1.0" // Плагин для управления зависимостями Spring
+    id "jacoco"
 }
 
 java {
@@ -64,6 +65,14 @@ publishing {
 }
 
 dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.3'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.3'
+
+    //testImplementation 'io.jaegertracing:jaeger-client:1.3.2'
+
+    // Mockito для тестирования
+    testImplementation 'org.mockito:mockito-core:5.2.0'
+    testImplementation 'org.mockito:mockito-junit-jupiter:5.2.0'
     // Spring
     implementation 'org.springframework.boot:spring-boot-autoconfigure' // Зависимость для автоматической конфигурации Spring Boot
 
@@ -80,8 +89,37 @@ dependencies {
 
     // Jaeger
     implementation "io.opentracing.contrib:opentracing-spring-jaeger-starter:3.3.1" // Зависимость для использования Jaeger с OpenTracing и Spring
+    testImplementation 'io.opentracing:opentracing-mock:0.33.0'
 
     // Lombok
     annotationProcessor "org.projectlombok:lombok:1.18.26" // Зависимость для аннотаций Lombok при компиляции
     compileOnly "org.projectlombok:lombok:1.18.26" // Зависимость только для компиляции кода с Lombok
+}
+
+test {
+    useJUnitPlatform()
+    testLogging {
+        events "PASSED", "FAILED", "SKIPPED" // Логировать успешные, проваленные и пропущенные тесты
+        showStandardStreams = true // Показывать стандартные потоки вывода (System.out, System.err)
+    }
+    finalizedBy jacocoTestReport
+}
+
+//В Gradle версии 7+ метод enabled для отчётов типа Report больше не поддерживается. Вместо этого используется метод required
+//jacocoTestReport {
+// dependsOn test
+// reports {
+// xml.enabled true
+// xml.destination file("${buildDir}/reports/jacoco/report.xml")
+// }
+//}
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.required.set(true) // Устанавливаем отчёт в формате XML как обязательный
+        xml.outputLocation.set(file("${buildDir}/reports/jacoco/report.xml")) // Указываем путь для сохранения отчёта
+        html.required.set(true) // HTML-отчет
+        html.outputLocation.set(file("${buildDir}/reports/jacoco/html")) // Путь к HTML-отчету
+    }
 }
