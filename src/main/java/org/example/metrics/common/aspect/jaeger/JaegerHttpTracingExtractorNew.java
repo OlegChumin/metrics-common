@@ -1,4 +1,4 @@
-package org.example.metrics.common.aspect;
+package org.example.metrics.common.aspect.jaeger;
 
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
