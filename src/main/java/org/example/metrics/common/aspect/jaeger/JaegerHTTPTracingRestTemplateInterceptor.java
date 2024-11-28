@@ -35,10 +35,7 @@ public class JaegerHTTPTracingRestTemplateInterceptor implements ClientHttpReque
             tracer.inject(activeSpan.context(), Format.Builtin.HTTP_HEADERS, new TextMap() {
                 @Override
                 public void put(String key, String value) {
-                    if ("uber-trace-id".equals(key)) {
-                        key = "jaeger-trace-id"; // Переименовываем заголовок
-                    }
-                    request.getHeaders().add(key, value);
+                    request.getHeaders().add(key, value); // Просто добавляем ключ и значение без изменений
                     log.info("Injected header: {} -> {}", key, value); // Логируем инжектированные заголовки
                 }
                 @Override
@@ -48,29 +45,31 @@ public class JaegerHTTPTracingRestTemplateInterceptor implements ClientHttpReque
             });
             log.info("Active span found, injecting trace context");
         } else {
-            // Логируем предупреждение, если активного спана нет
             log.warn("No active span found. Cannot inject trace context.");
         }
-        // Логируем только релевантные заголовки
-        String jaegerTraceId = request.getHeaders().getFirst("jaeger-trace-id");
 
-        // Разбор jaeger_traceId для проверки формата
-        if (jaegerTraceId != null) {
-            String[] parts = jaegerTraceId.split(":");
-            if (parts.length == 4) {
-                log.info("jaeger-trace-id format valid: traceId={}, spanId={}, parentSpanId={}, flags={}",
-                        parts[0], parts[1], parts[2], parts[3]);
-            } else {
-                log.warn("jaeger-trace-id format invalid: {}", jaegerTraceId);
-            }
-        } else {
-            log.warn("jaeger-trace-id not found in headers");
-        }
-
-        log.info("Header: jaeger-trace-id = {}",
-                jaegerTraceId != null ? jaegerTraceId : "jaeger-trace-id not found");
+        // Логируем форматы uber-trace-id и jaeger-trace-id
+        logTraceIdFormat("uber-trace-id", request.getHeaders().getFirst("uber-trace-id"));
+        logTraceIdFormat("jaeger-trace-id", request.getHeaders().getFirst("jaeger-trace-id"));
 
         // Выполняем запрос
         return execution.execute(request, body);
     }
+
+    // Универсальный метод для логирования формата trace ID
+    private void logTraceIdFormat(String headerName, String traceId) {
+        if (traceId != null) {
+            String[] parts = traceId.split(":");
+            if (parts.length == 4) {
+                log.info("{} format valid: traceId={}, spanId={}, parentSpanId={}, flags={}",
+                        headerName, parts[0], parts[1], parts[2], parts[3]);
+            } else {
+                log.warn("{} format invalid: {}", headerName, traceId);
+            }
+        } else {
+            log.warn("{} not found in headers", headerName);
+        }
+    }
+
+
 }

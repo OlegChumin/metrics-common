@@ -32,14 +32,14 @@ public class MetricConfiguration {
         log.info("MetricConfiguration has been initialized and is now active");
     }
 
-    @Bean(name = "tracingRestTemplate")
-    public RestTemplate restTemplateTracer(Tracer tracer) {
-        log.info("Initializing RestTemplate bean with JaegerHTTPTracingRestTemplateInterceptor");
-        RestTemplate restTemplate = new RestTemplate();
-        restTemplate.getInterceptors().add(new JaegerHTTPTracingRestTemplateInterceptor(tracer));
-        log.info("RestTemplate bean with tracing interceptor initialized successfully");
-        return restTemplate;
-    }
+//    @Bean(name = "tracingRestTemplate")
+//    public RestTemplate restTemplateTracer(Tracer tracer) {
+//        log.info("Initializing RestTemplate bean with JaegerHTTPTracingRestTemplateInterceptor");
+//        RestTemplate restTemplate = new RestTemplate();
+//        restTemplate.getInterceptors().add(new JaegerHTTPTracingRestTemplateInterceptor(tracer));
+//        log.info("RestTemplate bean with tracing interceptor initialized successfully");
+//        return restTemplate;
+//    }
 
     @Bean(name = "httpTracingExtractor")
     public JaegerHttpTracingExtractorNew httpTracingExtractorNew(Tracer tracer) {

@@ -65,6 +65,7 @@ public class JaegerTracingAspect {
 
         String methodName = pjp.getSignature().getName();
         log.debug("methodName: {}", methodName);
+
         // Извлечение HttpServletRequest
         RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
         HttpServletRequest request = null;
@@ -86,7 +87,7 @@ public class JaegerTracingAspect {
         } else {
             log.warn("HttpServletRequest not available for method: {}", methodName);
         }
-        // Если контекст был извлечен, создаем дочерний спан
+
         // Создание дочернего или нового спана
         Span span;
         if (parentContext != null) {
@@ -100,20 +101,14 @@ public class JaegerTracingAspect {
         }
 
         // Установка trace-id в MDC
-        MDC.put("jaeger-trace-id", span.context().toTraceId());
-// Логируем начало выполнения в спан -> все последующие действия, происходящие в этом потоке
-        // (например, вызовы к другим сервисам, внутренние методы и т.д.), будут ассоциированы с этим активным Span.
+        MDC.put("uber-trace-id", span.context().toTraceId());
+
+        // Логируем начало выполнения
         span.log("Starting method execution");
 
-        // Активируем спан с помощью Scope
-        /**
-         * Переменная scope необходима для активации и деактивации Span, несмотря на то, что она не используется
-         * явно в коде. Она управляет временем жизни Span и автоматически закрывает его по завершению метода.
-         */
         try (Scope scope = tracer.scopeManager().activate(span)) {
             return pjp.proceed();
-        } // scope.close() вызывается автоматически, когда выполнение блока try завершено
-        catch (Throwable throwable) {
+        } catch (Throwable throwable) {
             span.setTag("error", true);
             Map<String, Object> logMap = new HashMap<>();
             logMap.put("event", "error");
@@ -122,7 +117,7 @@ public class JaegerTracingAspect {
             throw throwable;
         } finally {
             span.log("Method execution finished");
-            span.finish(); // Вручную завершаем спан
+            span.finish(); // Завершаем спан
             log.info("Finished span for method: {} with Trace ID: {}, Span ID: {}",
                     methodName, span.context().toTraceId(), span.context().toSpanId());
         }
@@ -130,6 +125,34 @@ public class JaegerTracingAspect {
 
     // Метод для логирования заголовков запроса
     private void logRelevantRequestHeaders(HttpServletRequest request) {
-        log.info("Header: jaeger-trace-id = {}", request.getHeader("jaeger-trace-id") != null ? request.getHeader("jaeger-trace-id") : "jaeger-trace-id not found");
+        // Логируем uber-trace-id
+        String uberTraceId = request.getHeader("uber-trace-id");
+        log.info("Header: uber-trace-id = {}", uberTraceId != null ? uberTraceId : "uber-trace-id not found");
+        if (uberTraceId != null) {
+            logTraceIdFormat("uber-trace-id", uberTraceId);
+        }
+
+        // Логируем jaeger-trace-id
+        String jaegerTraceId = request.getHeader("jaeger-trace-id");
+        log.info("Header: jaeger-trace-id = {}", jaegerTraceId != null ? jaegerTraceId : "jaeger-trace-id not found");
+        if (jaegerTraceId != null) {
+            logTraceIdFormat("jaeger-trace-id", jaegerTraceId);
+        }
     }
+
+    // Универсальный метод для проверки формата trace ID
+    private void logTraceIdFormat(String headerName, String traceId) {
+        if (traceId != null) {
+            String[] parts = traceId.split(":");
+            if (parts.length == 4) {
+                log.info("{} format valid: traceId={}, spanId={}, parentSpanId={}, flags={}",
+                        headerName, parts[0], parts[1], parts[2], parts[3]);
+            } else {
+                log.warn("{} format invalid: {}", headerName, traceId);
+            }
+        } else {
+            log.warn("{} not found in headers", headerName);
+        }
+    }
+
 }

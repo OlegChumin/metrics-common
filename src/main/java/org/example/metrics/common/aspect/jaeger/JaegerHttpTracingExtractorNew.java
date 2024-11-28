@@ -33,12 +33,12 @@ public class JaegerHttpTracingExtractorNew {
             headers.put(headerName, request.getHeader(headerName));
 
             // Изменяем имя заголовка на кастомный, если это uber-trace-id
-            if ("uber-trace-id".equals(headerName)) {
-                headers.put("jaeger_trace-id", headerValue);
-                log.info("Renamed header uber-trace-id -> jaeger_trace-id");
-            } else {
-                headers.put(headerName, headerValue);
-            }
+//            if ("uber-trace-id".equals(headerName)) {
+//                headers.put("jaeger_trace-id", headerValue);
+//                log.info("Renamed header uber-trace-id -> jaeger_trace-id");
+//            } else {
+//                headers.put(headerName, headerValue);
+//            }
             log.info("Received header: {} -> {}", headerName, request.getHeader(headerName)); // Логируем все заголовки
         }
         SpanContext spanContext = tracer.extract(Format.Builtin.HTTP_HEADERS, new TextMapAdapter(headers) {

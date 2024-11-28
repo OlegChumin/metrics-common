@@ -1,0 +1,11 @@
+version: '3.8'
+services:
+  jaeger:
+    image: jaegertracing/all-in-one:1.6
+    container_name: jaeger
+    ports:
+      - "6831:6831/udp"  # UDP порт для агента Jaeger
+      - "16686:16686"    # Веб-интерфейс Jaeger
+      - "14268:14268"    # HTTP порт для Thrift сообщений
+    environment:
+      COLLECTOR_ZIPKIN_HTTP_PORT: 9411 # Для поддержки Zipkin, если нужно
