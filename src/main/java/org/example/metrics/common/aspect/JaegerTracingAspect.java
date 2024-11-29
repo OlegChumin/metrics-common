@@ -88,27 +88,33 @@ public class JaegerTracingAspect {
             log.warn("HttpServletRequest not available for method: {}", methodName);
         }
 
-        // Создание дочернего или нового спана
+        // Если контекст был извлечен, создаем дочерний спан или новый спан
         Span span;
         if (parentContext != null) {
             span = tracer.buildSpan(methodName).asChildOf(parentContext).start();
-            log.info("Started child span for method: {} with Trace ID: {}, Span ID: {}",
-                    methodName, span.context().toTraceId(), span.context().toSpanId());
+            log.info("Started child span for method: {} with Trace ID: {}, Span ID: {}", methodName, span.context().toTraceId(), span.context().toSpanId());
         } else {
             span = tracer.buildSpan(methodName).start();
-            log.info("Started new span for method: {} with Trace ID: {}, Span ID: {}",
-                    methodName, span.context().toTraceId(), span.context().toSpanId());
+            log.info("Started new span for method: {} with Trace ID: {}, Span ID: {}", methodName, span.context().toTraceId(), span.context().toSpanId());
         }
 
         // Установка trace-id в MDC
+        //MDC.put("jaeger-trace-id", span.context().toTraceId());
         MDC.put("uber-trace-id", span.context().toTraceId());
 
-        // Логируем начало выполнения
+        // Логируем начало выполнения в спан -> все последующие действия, происходящие в этом потоке
+        // (например, вызовы к другим сервисам, внутренние методы и т.д.), будут ассоциированы с этим активным Span.
         span.log("Starting method execution");
 
+        // Активируем спан с помощью Scope
+        /**
+         * Переменная scope необходима для активации и деактивации Span, несмотря на то, что она не используется
+         * явно в коде. Она управляет временем жизни Span и автоматически закрывает его по завершению метода.
+         */
         try (Scope scope = tracer.scopeManager().activate(span)) {
             return pjp.proceed();
-        } catch (Throwable throwable) {
+        } // scope.close() вызывается автоматически, когда выполнение блока try завершено
+        catch (Throwable throwable) {
             span.setTag("error", true);
             Map<String, Object> logMap = new HashMap<>();
             logMap.put("event", "error");
@@ -118,8 +124,7 @@ public class JaegerTracingAspect {
         } finally {
             span.log("Method execution finished");
             span.finish(); // Завершаем спан
-            log.info("Finished span for method: {} with Trace ID: {}, Span ID: {}",
-                    methodName, span.context().toTraceId(), span.context().toSpanId());
+            log.info("Finished span for method: {} with Trace ID: {}, Span ID: {}", methodName, span.context().toTraceId(), span.context().toSpanId());
         }
     }
 
@@ -145,8 +150,7 @@ public class JaegerTracingAspect {
         if (traceId != null) {
             String[] parts = traceId.split(":");
             if (parts.length == 4) {
-                log.info("{} format valid: traceId={}, spanId={}, parentSpanId={}, flags={}",
-                        headerName, parts[0], parts[1], parts[2], parts[3]);
+                log.info("{} format valid: traceId={}, spanId={}, parentSpanId={}, flags={}", headerName, parts[0], parts[1], parts[2], parts[3]);
             } else {
                 log.warn("{} format invalid: {}", headerName, traceId);
             }

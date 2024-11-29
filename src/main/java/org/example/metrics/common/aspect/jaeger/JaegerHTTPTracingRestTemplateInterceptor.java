@@ -36,8 +36,12 @@ public class JaegerHTTPTracingRestTemplateInterceptor implements ClientHttpReque
                 @Override
                 public void put(String key, String value) {
                     request.getHeaders().add(key, value); // Просто добавляем ключ и значение без изменений
+//                    if ("uber-trace-id".equals(key)) {
+//                        key = "jaeger-trace-id"; // Переименовываем заголовок
+//                    }
                     log.info("Injected header: {} -> {}", key, value); // Логируем инжектированные заголовки
                 }
+
                 @Override
                 public Iterator<Map.Entry<String, String>> iterator() {
                     throw new UnsupportedOperationException("iterator should never be used with TextMapInjectAdapter");

@@ -17,10 +17,9 @@ import javax.annotation.PostConstruct;
 
 @Slf4j
 @Configuration
-//@EnableAutoConfiguration
+@ComponentScan(basePackages = "org.example.metrics.common")
 @AutoConfigureAfter(io.opentracing.contrib.java.spring.jaeger.starter.JaegerAutoConfiguration.class)
 @EnableAspectJAutoProxy
-@ComponentScan(basePackages = "org.example.metrics.common")
 public class MetricConfiguration {
 
     static {
@@ -31,15 +30,6 @@ public class MetricConfiguration {
     public void init() {
         log.info("MetricConfiguration has been initialized and is now active");
     }
-
-//    @Bean(name = "tracingRestTemplate")
-//    public RestTemplate restTemplateTracer(Tracer tracer) {
-//        log.info("Initializing RestTemplate bean with JaegerHTTPTracingRestTemplateInterceptor");
-//        RestTemplate restTemplate = new RestTemplate();
-//        restTemplate.getInterceptors().add(new JaegerHTTPTracingRestTemplateInterceptor(tracer));
-//        log.info("RestTemplate bean with tracing interceptor initialized successfully");
-//        return restTemplate;
-//    }
 
     @Bean(name = "httpTracingExtractor")
     public JaegerHttpTracingExtractorNew httpTracingExtractorNew(Tracer tracer) {
