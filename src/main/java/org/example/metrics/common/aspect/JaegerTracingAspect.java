@@ -132,12 +132,12 @@ public class JaegerTracingAspect {
             logTraceIdFormat("uber-trace-id", uberTraceId);
         }
 
-        // Логируем jaeger-trace-id
-        String jaegerTraceId = request.getHeader("jaeger-trace-id");
-        log.info("Header: jaeger-trace-id = {}", jaegerTraceId != null ? jaegerTraceId : "jaeger-trace-id not found");
-        if (jaegerTraceId != null) {
-            logTraceIdFormat("jaeger-trace-id", jaegerTraceId);
-        }
+//        // Логируем jaeger-trace-id
+//        String jaegerTraceId = request.getHeader("jaeger-trace-id");
+//        log.info("Header: jaeger-trace-id = {}", jaegerTraceId != null ? jaegerTraceId : "jaeger-trace-id not found");
+//        if (jaegerTraceId != null) {
+//            logTraceIdFormat("jaeger-trace-id", jaegerTraceId);
+//        }
     }
 
     // Универсальный метод для проверки формата trace ID

@@ -4,8 +4,12 @@ import io.opentracing.Tracer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
+import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Slf4j
 @Component
@@ -22,13 +26,16 @@ public class RestTemplateTracingPostProcessor implements BeanPostProcessor {
 
         // Проверка наличия JaegerHTTPTracingRestTemplateInterceptor
         if (bean instanceof RestTemplate restTemplate) {
+            List<ClientHttpRequestInterceptor> interceptors = new ArrayList<>(restTemplate.getInterceptors());
             // Проверяем, есть ли уже трейсинг-интерсептор
-            if (restTemplate.getInterceptors().stream()
-                .noneMatch(interceptor -> interceptor instanceof JaegerHTTPTracingRestTemplateInterceptor)) {
-                restTemplate.getInterceptors().add(new JaegerHTTPTracingRestTemplateInterceptor(tracer));
+            if (interceptors.stream()
+                    .noneMatch(interceptor -> interceptor instanceof JaegerHTTPTracingRestTemplateInterceptor)) {
+                interceptors.add(new JaegerHTTPTracingRestTemplateInterceptor(tracer));
+                restTemplate.setInterceptors(interceptors); // Устанавливаем обновленный список
                 log.info("JaegerHTTPTracingRestTemplateInterceptor added to RestTemplate bean: {}", beanName);
             }
         }
         return bean;
     }
+
 }

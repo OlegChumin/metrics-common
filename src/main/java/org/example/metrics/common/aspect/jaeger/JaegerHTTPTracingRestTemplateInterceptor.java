@@ -50,7 +50,7 @@ public class JaegerHTTPTracingRestTemplateInterceptor implements ClientHttpReque
 
         // Логируем форматы uber-trace-id и jaeger-trace-id
         logTraceIdFormat("uber-trace-id", request.getHeaders().getFirst("uber-trace-id"));
-        logTraceIdFormat("jaeger-trace-id", request.getHeaders().getFirst("jaeger-trace-id"));
+        //logTraceIdFormat("jaeger-trace-id", request.getHeaders().getFirst("jaeger-trace-id"));
 
         // Выполняем запрос
         return execution.execute(request, body);

@@ -3,7 +3,7 @@ import java.text.SimpleDateFormat // Импорт класса для форма
 plugins {
     id "java-library" // Подключает плагин для создания Java-библиотеки
     id "maven-publish" // Подключает плагин для публикации артефактов в репозитории Maven
-    id "org.springframework.boot" version "2.5.5" // Подключает плагин для работы со Spring Boot
+    id "org.springframework.boot" version "2.6.3" // Подключает плагин для работы со Spring Boot
     id "io.spring.dependency-management" version "1.0.11.RELEASE" // Плагин для управления зависимостями Spring
     id "jacoco"
 }
@@ -15,7 +15,7 @@ java {
 }
 
 group = 'org.example' // Определяет группу (group ID) проекта
-version = "1.0.0.71" // Определяет версию проекта
+version = "1.0.0.75" // Определяет версию проекта
 
 bootJar {
     enabled = false // Отключает создание jar-файла для Spring Boot приложения
@@ -76,8 +76,8 @@ publishing {
 
 dependencies {
     // Spring Boot
-    implementation 'org.springframework.boot:spring-boot-autoconfigure:2.5.5' // Зависимость для автоматической конфигурации Spring Boot
-    implementation 'org.springframework.boot:spring-boot-starter-web:2.5.5' // Зависимость для работы с REST API
+    implementation 'org.springframework.boot:spring-boot-autoconfigure:2.6.3' // Зависимость для автоматической конфигурации Spring Boot
+    implementation 'org.springframework.boot:spring-boot-starter-web:2.6.3' // Зависимость для работы с REST API
 
     // Logging
     implementation 'org.slf4j:slf4j-api:1.7.32' // Зависимость для использования SLF4J API для логирования
