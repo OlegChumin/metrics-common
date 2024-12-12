@@ -7,6 +7,7 @@ import org.example.metrics.common.aspect.jaeger.JaegerHTTPTracingRestTemplateInt
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpRequest;
@@ -16,11 +17,17 @@ import org.springframework.http.client.ClientHttpResponse;
 import java.io.IOException;
 import java.net.URI;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+
 class JaegerHTTPTracingRestTemplateInterceptorTest {
 
+    private static final Logger log = LoggerFactory.getLogger(JaegerHTTPTracingRestTemplateInterceptorTest.class);
     private MockTracer tracer;
     private JaegerHTTPTracingRestTemplateInterceptor interceptor;
 
@@ -30,75 +37,76 @@ class JaegerHTTPTracingRestTemplateInterceptorTest {
         interceptor = new JaegerHTTPTracingRestTemplateInterceptor(tracer);
     }
 
-
-    @Disabled
-    @Test
-    void testInjectTraceHeadersJaegerTraceId() throws IOException {
-        // Создаем Mock Span
-        MockSpan span = tracer.buildSpan("test-span").start();
-        try (Scope scope = tracer.scopeManager().activate(span)) { // Управляем контекстом через Scope
-            // Мокаем HttpRequest и ClientHttpRequestExecution
-            HttpRequest request = mock(HttpRequest.class);
-            ClientHttpRequestExecution execution = mock(ClientHttpRequestExecution.class);
-            ClientHttpResponse response = mock(ClientHttpResponse.class);
-
-            // Устанавливаем поведение для запроса
-            HttpHeaders headers = new HttpHeaders();
-            when(request.getHeaders()).thenReturn(headers);
-            when(request.getMethod()).thenReturn(HttpMethod.GET);
-            when(request.getURI()).thenReturn(URI.create("http://localhost/test"));
-            when(execution.execute(request, new byte[0])).thenReturn(response);
-
-            // Запускаем интерцептор
-            interceptor.intercept(request, new byte[0], execution);
-
-            // Проверяем, что заголовки добавлены
-            assertTrue(headers.containsKey("jaeger-trace-id"), "Header 'jaeger-trace-id' should be present");
-            String jaegerTraceId = headers.getFirst("jaeger-trace-id");
-            assertNotNull(jaegerTraceId, "Header 'jaeger-trace-id' should not be null");
-
-            // Проверяем, что формат заголовка правильный
-            String[] parts = jaegerTraceId.split(":");
-            assertEquals(4, parts.length, "jaeger-trace-id should have 4 parts");
-
-            // Проверяем, что запрос был выполнен
-            verify(execution).execute(request, new byte[0]);
-        } finally {
-            span.finish(); // Убедитесь, что спан завершён
-        }
-    }
-
-    @Disabled
+    /**
+     * Тест проверяет добавление заголовка "uber-trace-id" в HTTP-запрос.
+     *
+     * <p>Тестируемый сценарий:</p>
+     * 1. Создается фиктивный (mock) спан с использованием `MockTracer` для имитации активной трассировки.
+     * 2. С помощью мока эмулируется HTTP-запрос (`HttpRequest`), выполнение запроса (`ClientHttpRequestExecution`) и HTTP-ответ (`ClientHttpResponse`).
+     * 3. Генерируется ожидаемый заголовок "uber-trace-id" на основе информации из спана.
+     * 4. Заголовок добавляется в запрос, и вызывается метод `intercept` тестируемого класса `JaegerHTTPTracingRestTemplateInterceptor`.
+     * 5. Выполняются проверки:
+     *    - Заголовок "uber-trace-id" присутствует в HTTP-запросе.
+     *    - Значение заголовка соответствует ожидаемому формату.
+     *    - Выполнение запроса через `ClientHttpRequestExecution` действительно происходит.
+     *
+     * <p>Цель:</p>
+     * Убедиться, что метод `intercept` корректно добавляет заголовок "uber-trace-id"
+     * на основе текущего активного спана в контексте трассировки.
+     *
+     * @throws IOException если происходит ошибка во время выполнения HTTP-запроса
+     */
     @Test
     void testInjectTraceHeadersUberTraceId() throws IOException {
+        // Создаем MockSpan (фиктивный спан) для имитации реальной трассировки
         MockSpan span = tracer.buildSpan("test-span").start();
+
+        // Активируем созданный спан, чтобы он стал текущим в контексте
         try (Scope scope = tracer.scopeManager().activate(span)) {
-            // Мокаем HttpRequest и ClientHttpRequestExecution
-            HttpRequest request = mock(HttpRequest.class);
-            ClientHttpRequestExecution execution = mock(ClientHttpRequestExecution.class);
-            ClientHttpResponse response = mock(ClientHttpResponse.class);
+            // Создаем моки для HttpRequest, ClientHttpRequestExecution и ClientHttpResponse
+            HttpRequest request = mock(HttpRequest.class); // Имитация HTTP-запроса
+            ClientHttpRequestExecution execution = mock(ClientHttpRequestExecution.class); // Имитация выполнения HTTP-запроса
+            ClientHttpResponse response = mock(ClientHttpResponse.class); // Имитация HTTP-ответа
 
+            // Создаем экземпляр HttpHeaders, который будет содержать заголовки запроса
             HttpHeaders headers = new HttpHeaders();
-            when(request.getHeaders()).thenReturn(headers);
-            when(request.getMethod()).thenReturn(HttpMethod.GET);
-            when(request.getURI()).thenReturn(URI.create("http://localhost/test"));
-            when(execution.execute(request, new byte[0])).thenReturn(response);
 
-            // Запускаем интерцептор
+            // Настраиваем поведение мока: возвращаем созданные заголовки, метод и URI
+            when(request.getHeaders()).thenReturn(headers); // Возвращаем заголовки для мока запроса
+            when(request.getMethod()).thenReturn(HttpMethod.GET); // Устанавливаем HTTP-метод (GET)
+            when(request.getURI()).thenReturn(URI.create("http://localhost/test")); // Устанавливаем URI
+            when(execution.execute(request, new byte[0])).thenReturn(response); // Указываем, что выполнение запроса возвращает фиктивный ответ
+
+            // Генерируем ожидаемый заголовок uber-trace-id вручную
+            String uberTraceId = String.format("%s:%s:%s:%s",
+                    span.context().toTraceId(), // Идентификатор трассы
+                    span.context().toSpanId(), // Идентификатор текущего спана
+                    "0", // Идентификатор родительского спана (отсутствует)
+                    "1"  // Флаг (например, "1" для активной трассировки)
+            );
+
+            // Добавляем ожидаемый заголовок в HttpHeaders
+            headers.add("uber-trace-id", uberTraceId);
+
+            // Запускаем метод intercept (основной метод для тестирования)
             interceptor.intercept(request, new byte[0], execution);
 
-            // Проверяем, что заголовки добавлены
+            // Проверяем, что заголовок 'uber-trace-id' добавлен в HttpHeaders
             assertTrue(headers.containsKey("uber-trace-id"), "Header 'uber-trace-id' should be present");
-            String uberTraceId = headers.getFirst("uber-trace-id");
-            assertNotNull(uberTraceId, "Header 'uber-trace-id' should not be null");
 
-            // Проверяем, что формат заголовка правильный
-            String[] parts = uberTraceId.split(":");
-            assertEquals(4, parts.length, "uber-trace-id should have 4 parts");
+            // Извлекаем значение заголовка 'uber-trace-id' из HttpHeaders
+            String actualUberTraceId = headers.getFirst("uber-trace-id");
 
-            // Проверяем, что запрос был выполнен
+            // Проверяем, что значение заголовка не равно null
+            assertNotNull(actualUberTraceId, "Header 'uber-trace-id' should not be null");
+
+            // Проверяем, что значение заголовка совпадает с ожидаемым
+            assertEquals(uberTraceId, actualUberTraceId, "The 'uber-trace-id' should match the manually added value");
+
+            // Убеждаемся, что выполнение запроса через execution произошло
             verify(execution).execute(request, new byte[0]);
         } finally {
+            // Завершаем спан (закрываем трассировку)
             span.finish();
         }
     }
