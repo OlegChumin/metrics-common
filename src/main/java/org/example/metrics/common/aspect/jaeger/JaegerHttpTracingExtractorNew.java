@@ -22,6 +22,27 @@ public class JaegerHttpTracingExtractorNew {
         this.tracer = tracer;
     }
 
+    /**
+     * Извлекает {@link SpanContext} из заголовков HTTP-запроса.
+     *
+     * <p>Метод обрабатывает все заголовки из переданного {@link HttpServletRequest},
+     * собирает их в карту, и с помощью {@link Tracer#extract} восстанавливает
+     * контекст трассировки {@link SpanContext}.
+     *
+     * <p><strong>Особенности:</strong>
+     * <ul>
+     *     <li>Собирает все заголовки запроса и логирует их.</li>
+     *     <li>Использует формат {@link Format.Builtin#HTTP_HEADERS} для извлечения контекста.</li>
+     *     <li>Логирует извлечённый контекст, если он был найден, включая Trace ID и Span ID.</li>
+     *     <li>Выводит предупреждение, если контекст трассировки отсутствует.</li>
+     * </ul>
+     *
+     * @param request HTTP-запрос, из которого будут извлекаться заголовки.
+     * @return {@link SpanContext}, если контекст трассировки был извлечён успешно; иначе {@code null}.
+     * @throws UnsupportedOperationException если вызывается метод {@code put} в {@link TextMapAdapter}.
+     * @see Tracer#extract
+     * @see Format.Builtin#HTTP_HEADERS
+     */
     public SpanContext extract(HttpServletRequest request) {
         Map<String, String> headers = new HashMap<>();
 

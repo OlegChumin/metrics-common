@@ -11,6 +11,29 @@ import org.springframework.web.client.RestTemplate;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * {@code RestTemplateTracingPostProcessor} - это реализация {@link BeanPostProcessor},
+ * которая автоматически добавляет интерцептор {@link JaegerHTTPTracingRestTemplateInterceptor}
+ * для всех бинов {@link RestTemplate} в приложении.
+ *
+ * <p>Цель класса - интеграция с Jaeger Tracing для обеспечения распределенного трассирования
+ * HTTP-запросов, выполняемых с помощью {@link RestTemplate}.
+ *
+ * <p><strong>Особенности:</strong>
+ * <ul>
+ *     <li>Удаляет дублирующиеся экземпляры интерцептора, если они уже присутствуют.</li>
+ *     <li>Добавляет интерцептор в конец списка существующих.</li>
+ *     <li>Логирует факт добавления интерцептора для каждого обработанного {@link RestTemplate}.</li>
+ * </ul>
+ *
+ * <p>Этот класс аннотирован как {@link Component}, чтобы автоматически обнаруживаться
+ * и регистрироваться в контексте Spring.
+ *
+ * @author [Олег Чумин]
+ * @version 1.0
+ * @since [Текущая Дата или Версия Приложения]
+ */
+
 @Slf4j
 @Component
 public class RestTemplateTracingPostProcessor implements BeanPostProcessor {

@@ -1,4 +1,4 @@
-package org.example.metrics.common.aspect;
+package org.example.metrics.common.aspect.jaeger;
 
 import io.opentracing.Scope;
 import io.opentracing.Span;
@@ -10,7 +10,6 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
-import org.example.metrics.common.aspect.jaeger.JaegerHttpTracingExtractorNew;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,42 +18,79 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
-
 
 @Slf4j
 @Aspect
 @Component("customTracingAspect")
 public class JaegerTracingAspect {
 
+    /**
+     * Инициализирует аспект и логирует информацию об успешной инициализации.
+     *
+     * <p>Этот метод вызывается автоматически после создания бина благодаря аннотации {@link PostConstruct}.
+     */
     @PostConstruct
     public void init() {
         log.info("JaegerTracingAspect has been initialized");
     }
 
-    // ff флаг работы аспекта jaeger
+    /**
+     * Флаг включения или отключения аспекта Jaeger.
+     * <p>Определяется через свойство {@code feature-flag.ccc-jaeger.tracing.enabled}.
+     */
     @Value("${feature-flag.ccc-jaeger.tracing.enabled}")
     private boolean tracingEnabled;
+
+    /**
+     * Экземпляр {@link Tracer} для управления созданием и завершением спанов.
+     */
     private final Tracer tracer;
+
+    /**
+     * Экстрактор для извлечения контекста трассировки из HTTP-запросов.
+     */
     private final JaegerHttpTracingExtractorNew httpTracingExtractor;
 
+    /**
+     * Конструктор для инициализации аспекта трассировки Jaeger.
+     *
+     * @param tracer                  экземпляр {@link Tracer} для управления трассировкой.
+     * @param httpTracingExtractorNew экстрактор {@link JaegerHttpTracingExtractorNew}
+     *                                для извлечения контекста из HTTP-запросов.
+     */
     public JaegerTracingAspect(Tracer tracer, @Qualifier("httpTracingExtractor") JaegerHttpTracingExtractorNew httpTracingExtractorNew) {
         this.tracer = tracer;
         this.httpTracingExtractor = httpTracingExtractorNew;
     }
 
+    /**
+     * Поинткат для методов внутри бинов, аннотированных как @Service.
+     */
     @Pointcut("@within(org.springframework.stereotype.Service)")
     private void allServiceMethods() {
     }
 
+    /**
+     * Поинткат для методов внутри бинов, аннотированных как @RestController.
+     */
     @Pointcut("@within(org.springframework.web.bind.annotation.RestController)")
     private void allRestControllers() {
     }
 
+    /**
+     * Основной метод трассировки, который оборачивает вызовы сервисных и контроллерных методов.
+     *
+     * <p>Создаёт новый спан или дочерний спан в зависимости от наличия контекста трассировки в запросе.
+     * Активирует спан, логирует начало и завершение метода, а также обрабатывает ошибки.
+     *
+     * @param pjp объект {@link ProceedingJoinPoint}, предоставляющий доступ к оборачиваемому методу.
+     * @return результат выполнения оборачиваемого метода.
+     * @throws Throwable если оборачиваемый метод выбрасывает исключение.
+     */
     @Around("allServiceMethods() || allRestControllers()")
     public Object traceMethod(ProceedingJoinPoint pjp) throws Throwable {
         log.debug("TracingEnabled {}", tracingEnabled);
@@ -128,13 +164,20 @@ public class JaegerTracingAspect {
         }
     }
 
-    // Метод для логирования заголовков запроса
+    /**
+     * Логирует информацию о заголовке запроса {@code uber-trace-id}.
+     *
+     * <p>Если заголовок {@code uber-trace-id} присутствует, также проверяет и логирует его формат.
+     * Этот метод предназначен для диагностики заголовков трассировки, которые передаются в HTTP-запросах.
+     *
+     * @param request объект {@link HttpServletRequest}, содержащий заголовки запроса.
+     */
     private void logRelevantRequestHeaders(HttpServletRequest request) {
         // Логируем uber-trace-id
         String uberTraceId = request.getHeader("uber-trace-id");
         log.info("Header: uber-trace-id = {}", uberTraceId != null ? uberTraceId : "uber-trace-id not found");
         if (uberTraceId != null) {
-            logTraceIdFormat("uber-trace-id", uberTraceId);
+            TraceIdUtils.logTraceIdFormat("uber-trace-id", uberTraceId);
         }
 
 //        // Логируем jaeger-trace-id
@@ -143,20 +186,6 @@ public class JaegerTracingAspect {
 //        if (jaegerTraceId != null) {
 //            logTraceIdFormat("jaeger-trace-id", jaegerTraceId);
 //        }
-    }
-
-    // Универсальный метод для проверки формата trace ID
-    private void logTraceIdFormat(String headerName, String traceId) {
-        if (traceId != null) {
-            String[] parts = traceId.split(":");
-            if (parts.length == 4) {
-                log.info("{} format valid: traceId={}, spanId={}, parentSpanId={}, flags={}", headerName, parts[0], parts[1], parts[2], parts[3]);
-            } else {
-                log.warn("{} format invalid: {}", headerName, traceId);
-            }
-        } else {
-            log.warn("{} not found in headers", headerName);
-        }
     }
 
 }

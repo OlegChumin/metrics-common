@@ -53,27 +53,11 @@ public class JaegerHTTPTracingRestTemplateInterceptor implements ClientHttpReque
         }
 
         // Логируем форматы uber-trace-id и jaeger-trace-id
-        logTraceIdFormat("uber-trace-id", request.getHeaders().getFirst("uber-trace-id"));
+        TraceIdUtils.logTraceIdFormat("uber-trace-id", request.getHeaders().getFirst("uber-trace-id"));
         //logTraceIdFormat("jaeger-trace-id", request.getHeaders().getFirst("jaeger-trace-id"));
 
         // Выполняем запрос
         return execution.execute(request, body);
     }
-
-    // Универсальный метод для логирования формата trace ID
-    private void logTraceIdFormat(String headerName, String traceId) {
-        if (traceId != null) {
-            String[] parts = traceId.split(":");
-            if (parts.length == 4) {
-                log.info("{} format valid: traceId={}, spanId={}, parentSpanId={}, flags={}",
-                        headerName, parts[0], parts[1], parts[2], parts[3]);
-            } else {
-                log.warn("{} format invalid: {}", headerName, traceId);
-            }
-        } else {
-            log.warn("{} not found in headers", headerName);
-        }
-    }
-
 
 }
