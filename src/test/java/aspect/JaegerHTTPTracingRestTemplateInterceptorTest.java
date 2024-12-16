@@ -3,7 +3,7 @@ package aspect;
 import io.opentracing.Scope;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
-import org.example.metrics.common.aspect.jaeger.JaegerHTTPTracingRestTemplateInterceptor;
+import org.example.metrics.common.aspect.interceptor.JaegerHTTPTracingRestTemplateInterceptor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;

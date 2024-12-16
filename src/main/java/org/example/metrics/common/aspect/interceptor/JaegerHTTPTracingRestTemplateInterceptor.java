@@ -1,10 +1,12 @@
-package org.example.metrics.common.aspect.jaeger;
+package org.example.metrics.common.aspect.interceptor;
 
 import io.opentracing.Span;
 import io.opentracing.Tracer;
 import io.opentracing.propagation.Format;
 import io.opentracing.propagation.TextMap;
 import lombok.extern.slf4j.Slf4j;
+
+import org.example.metrics.common.utils.TraceIdUtils;
 import org.springframework.http.HttpRequest;
 import org.springframework.http.client.ClientHttpRequestExecution;
 import org.springframework.http.client.ClientHttpRequestInterceptor;

@@ -1,4 +1,4 @@
-package org.example.metrics.common.aspect.jaeger;
+package org.example.metrics.common.aspect;
 
 import io.opentracing.Scope;
 import io.opentracing.Span;
@@ -10,6 +10,8 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
+import org.example.metrics.common.aspect.extractor.JaegerHttpTracingExtractorNew;
+import org.example.metrics.common.utils.TraceIdUtils;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,6 +25,29 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Аспект для интеграции трассировки Jaeger в методы сервисов и REST-контроллеров.
+ *
+ * <p>Этот аспект автоматически извлекает контекст трассировки из входящих HTTP-запросов, создаёт и управляет спанами,
+ * а также логирует trace ID для дальнейшей корреляции и отладки. Поддерживает включение и отключение через feature flag
+ * и интегрируется с бинами, управляемыми Spring.
+ *
+ * <h2>Ключевые особенности:</h2>
+ * <ul>
+ *     <li>Извлечение контекста родительского спана из заголовков HTTP-запроса.</li>
+ *     <li>Создание новых спанов или дочерних спанов для аннотированных методов сервисов и контроллеров.</li>
+ *     <li>Логирование информации трассировки, включая trace ID и ошибки, в MDC для последующего логирования.</li>
+ *     <li>Может быть включен или отключен с помощью свойства {@code feature-flag.ccc-jaeger.tracing.enabled}.</li>
+ * </ul>
+ *
+ * <h2>Использование:</h2>
+ * <ul>
+ *     <li>Аннотируйте свои классы с помощью {@code @Service} или {@code @RestController}, чтобы включить трассировку.</li>
+ *     <li>Убедитесь, что аспект правильно настроен с {@link Tracer} и экстрактором контекста HTTP.</li>
+ * </ul>
+ *
+ * <p>Этот аспект инициализируется как компонент Spring и использует AspectJ для перехвата методов.
+ */
 @Slf4j
 @Aspect
 @Component("customTracingAspect")
@@ -143,9 +168,9 @@ public class JaegerTracingAspect {
         span.log("Starting method execution");
 
         // Активируем спан с помощью Scope
-        /**
-         * Переменная scope необходима для активации и деактивации Span, несмотря на то, что она не используется
-         * явно в коде. Она управляет временем жизни Span и автоматически закрывает его по завершению метода.
+        /*
+          Переменная scope необходима для активации и деактивации Span, несмотря на то, что она не используется
+          явно в коде. Она управляет временем жизни Span и автоматически закрывает его по завершению метода.
          */
         try (Scope scope = tracer.scopeManager().activate(span)) {
             return pjp.proceed();

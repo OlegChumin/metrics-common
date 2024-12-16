@@ -3,7 +3,7 @@ package org.example.metrics.common.config;
 import io.opentracing.Tracer;
 import lombok.extern.slf4j.Slf4j;
 
-import org.example.metrics.common.aspect.jaeger.JaegerHttpTracingExtractorNew;
+import org.example.metrics.common.aspect.extractor.JaegerHttpTracingExtractorNew;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;

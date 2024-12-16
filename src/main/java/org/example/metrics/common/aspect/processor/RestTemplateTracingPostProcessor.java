@@ -1,7 +1,8 @@
-package org.example.metrics.common.aspect.jaeger;
+package org.example.metrics.common.aspect.processor;
 
 import io.opentracing.Tracer;
 import lombok.extern.slf4j.Slf4j;
+import org.example.metrics.common.aspect.interceptor.JaegerHTTPTracingRestTemplateInterceptor;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
