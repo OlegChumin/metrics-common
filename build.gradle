@@ -38,6 +38,13 @@ compileTestJava {
     options.encoding = 'UTF-8' // Устанавливает кодировку UTF-8 для компиляции тестового кода
 }
 
+tasks.withType(Javadoc) {
+    options.encoding = 'UTF-8'
+    options.charSet = 'UTF-8'
+    options.docEncoding = 'UTF-8'
+}
+
+
 jar {
     enabled = true // Включает создание обычного jar-файла
     manifest {

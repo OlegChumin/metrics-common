@@ -24,6 +24,11 @@ public class JaegerHTTPTracingRestTemplateInterceptor implements ClientHttpReque
 
     private final Tracer tracer;
 
+    /**
+     * Имя заголовка trace-id по умолчанию.
+     */
+    private final String traceId = "uber-trace-id";
+
     public JaegerHTTPTracingRestTemplateInterceptor(Tracer tracer) {
         this.tracer = tracer;
     }
@@ -55,7 +60,7 @@ public class JaegerHTTPTracingRestTemplateInterceptor implements ClientHttpReque
         }
 
         // Логируем форматы uber-trace-id и jaeger-trace-id
-        TraceIdUtils.logTraceIdFormat("uber-trace-id", request.getHeaders().getFirst("uber-trace-id"));
+        TraceIdUtils.logTraceIdFormat(traceId, request.getHeaders().getFirst(traceId));
         //logTraceIdFormat("jaeger-trace-id", request.getHeaders().getFirst("jaeger-trace-id"));
 
         // Выполняем запрос
