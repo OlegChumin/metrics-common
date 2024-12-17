@@ -5,6 +5,10 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public final class TraceIdUtils {
 
+    private TraceIdUtils() {
+        throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
+    }
+
     /**
      * Проверяет формат trace ID и логирует его содержимое.
      *
@@ -18,7 +22,7 @@ public final class TraceIdUtils {
      * Если формат trace ID неверный или заголовок отсутствует, это логируется как предупреждение.
      *
      * @param headerName имя заголовка (например, {@code uber-trace-id}).
-     * @param traceId значение trace ID из заголовка.
+     * @param traceId    значение trace ID из заголовка.
      */
     public static void logTraceIdFormat(String headerName, String traceId) {
         if (traceId != null) {
