@@ -1,8 +1,18 @@
 package org.example.metrics.common.aspect.extractor;
 
+
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
+import io.opentracing.propagation.Format;
+import io.opentracing.propagation.TextMapAdapter;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.ws.context.MessageContext;
+import org.springframework.ws.transport.http.HttpComponentsConnection;
+
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 @Slf4j
 public class SoapServerTracingExtractor {

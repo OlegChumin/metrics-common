@@ -102,10 +102,14 @@ dependencies {
     testImplementation 'io.opentracing:opentracing-mock:0.33.0' // Зависимость для мокирования OpenTracing в тестах
 
     // SOAP
-    implementation 'org.springframework.ws:spring-ws-core:3.1.1' // Основной модуль Spring Web Services
-    implementation 'org.springframework.ws:spring-xml:3.1.0' // Дополнительно, для работы с XML-маршаллерами (например, JAXB или другие)
-    implementation 'org.apache.httpcomponents:httpclient:4.5.14' // Для работы с HTTP и SOAP-запросами (например, Apache HttpClient)
-    testImplementation 'org.springframework.ws:spring-ws-test:3.1.1' // Тестирование SOAP
+    // Основной модуль Spring Web Services
+    implementation 'org.springframework.ws:spring-ws-core:3.1.1'
+    // Дополнительно, для работы с XML-маршалерами (например, JAXB или другие)
+    implementation 'org.springframework:spring-oxm:6.0.12'
+    // Для работы с HTTP и SOAP-запросами (например, Apache HttpClient)
+    implementation 'org.apache.httpcomponents:httpclient:4.5.14'
+    // Тестирование SOAP
+    testImplementation 'org.springframework.ws:spring-ws-test:3.1.1'
 
     // Lombok
     compileOnly "org.projectlombok:lombok:${LOMBOK_VERSION}" // Зависимость только для компиляции кода с Lombok
