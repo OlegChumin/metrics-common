@@ -65,6 +65,7 @@ configurations {
 repositories {
     mavenLocal() // Подключает локальный Maven-репозиторий
     mavenCentral() // Подключает центральный репозиторий Maven
+    maven { url 'https://repo.spring.io/release' } // если в Maven Central зависимости нет
 }
 
 publishing {
@@ -100,9 +101,19 @@ dependencies {
     implementation 'io.opentracing.contrib:opentracing-spring-jaeger-starter:3.3.1' // Зависимость для использования Jaeger с OpenTracing и Spring
     testImplementation 'io.opentracing:opentracing-mock:0.33.0' // Зависимость для мокирования OpenTracing в тестах
 
+    // SOAP
+    implementation 'org.springframework.ws:spring-ws-core:3.1.1' // Основной модуль Spring Web Services
+    implementation 'org.springframework.ws:spring-xml:3.1.0' // Дополнительно, для работы с XML-маршаллерами (например, JAXB или другие)
+    implementation 'org.apache.httpcomponents:httpclient:4.5.14' // Для работы с HTTP и SOAP-запросами (например, Apache HttpClient)
+    testImplementation 'org.springframework.ws:spring-ws-test:3.1.1' // Тестирование SOAP
+
     // Lombok
-    compileOnly 'org.projectlombok:lombok:1.18.26' // Зависимость только для компиляции кода с Lombok
-    annotationProcessor 'org.projectlombok:lombok:1.18.26' // Зависимость для аннотаций Lombok при компиляции
+    compileOnly "org.projectlombok:lombok:${LOMBOK_VERSION}" // Зависимость только для компиляции кода с Lombok
+    annotationProcessor "org.projectlombok:lombok:${LOMBOK_VERSION}" // Зависимость для аннотаций Lombok при компиляции
+
+    // Commons
+    implementation 'org.jetbrains:annotations:24.1.0'
+    implementation 'javax.validation:validation-api:2.0.1.Final'
 
     // JUnit 5
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.2' // Зависимость для использования JUnit 5 API в тестах
